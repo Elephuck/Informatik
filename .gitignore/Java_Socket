@@ -1,0 +1,88 @@
+import javax.swing.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+/**
+ * Created by Jian Wang 11-05-2018
+ */
+
+public class Socket_Server extends JFrame implements ActionListener{
+	
+	ServerSocket ss = null;
+	Socket s = null;
+	JFileChooser jfc;
+	JButton jb,jb1;
+	JTextArea jta;
+	JLabel Title;
+	ObjectOutputStream oos;
+	public static void main(String[] args) {
+		Socket_Server ss =new Socket_Server("127.0.0.1",2222);
+		//Socket_Server sos = new Socket_Server(6666);
+	}
+	public Socket_Server(String host,int port) {
+		jfc=new JFileChooser();
+		jb=new JButton("send the Testing File");
+		Title=new JLabel("This is Server");
+		jb.addActionListener(this);
+		jta=new JTextArea();
+		jta.setEditable(false);
+		jta.setAutoscrolls(true);
+		this.add(jb,"South");
+		this.add(jta,"Center");
+		this.add(Title,"North");
+		
+		this.setVisible(true);
+		this.setLocation(500, 300);
+		this.setSize(300, 200);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		try {
+			Socket s = new Socket(host,port);
+			System.out.println("Client is running");
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public void SendFile(File f) {
+		try {
+
+			DataInputStream dis=new DataInputStream(new FileInputStream(f));
+			DataOutputStream dos=new DataOutputStream(s.getOutputStream());
+			
+			dos.writeLong(f.length());
+			dos.writeUTF(f.getName());
+			System.out.println("File long:"+f.length());
+			int count=-1,sum=0;
+			byte[] buffer=new byte[7800*1024];
+			while((count=dis.read(buffer))!=-1) {
+				dos.write(buffer,0,count);
+				sum+=count;
+				System.out.println(sum+"byte"+"have been sent");
+			}
+			System.out.println("done!");
+			dos.flush();
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+		
+		
+		
+
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		if(e.getSource()==jb) {
+			jfc.setCurrentDirectory(jfc.getCurrentDirectory());
+			int result=jfc.showOpenDialog(this);
+			File f = jfc.getSelectedFile();
+			if(result ==0&f!=null) {
+				SendFile(f);
+			}
+		}
+		
+	}
+	
+}
